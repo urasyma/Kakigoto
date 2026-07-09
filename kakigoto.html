@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kakigoto — マルチ執筆ワークスペース</title>
+<link rel="icon" type="image/png" href="img/logo.png">
+<link rel="apple-touch-icon" href="img/logo.png">
+<link rel="stylesheet" href="css/kakigoto.css">
+</head>
+<body>
+<div class="app">
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="logo"><img src="img/logo.png" alt="Kakigoto ロゴ" class="logo-mark">Kakigoto<em>マルチ執筆ワークスペース</em></div>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" data-tab="scenario" onclick="switchTab('scenario')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      <span>執筆</span>
+    </button>
+    <button class="tab-btn" data-tab="npc" onclick="switchTab('npc')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>キャラクター</span>
+    </button>
+    <button class="tab-btn" data-tab="artifact" onclick="switchTab('artifact')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <span>アイテム</span>
+    </button>
+    <button class="tab-btn" data-tab="map" onclick="switchTab('map')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span>マップ</span>
+    </button>
+    <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>時系列</span>
+    </button>
+    <button class="tab-btn" data-tab="plot" onclick="switchTab('plot')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>プロット</span>
+    </button>
+  </nav>
+
+  <div class="topbar-actions">
+    <button class="btn btn-sm" onclick="exportText()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      テキスト出力
+    </button>
+    <button class="btn btn-sm" onclick="exportPDF()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      PDF出力
+    </button>
+    <div class="save-menu-wrap" id="saveMenuWrap">
+      <button class="btn btn-sm btn-primary" onclick="toggleSaveMenu(event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        保存
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="save-dropdown" id="saveDropdown">
+        <div class="save-dropdown-hd">保存・管理</div>
+        <button class="save-dd-btn" onclick="closeSaveMenu();quickSave()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          <span>クイック保存</span><span class="save-dd-sub">上書き保存（Ctrl+S）</span>
+        </button>
+        <button class="save-dd-btn" onclick="closeSaveMenu();openSlotModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>スロット保存・管理</span><span class="save-dd-sub">名前をつけて複数保存</span>
+        </button>
+        <div class="save-dd-sep"></div>
+        <button class="save-dd-btn" onclick="closeSaveMenu();exportProjectFile()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>プロジェクトファイルを書き出す</span><span class="save-dd-sub">拡張子 .mwpj でバックアップ</span>
+        </button>
+        <button class="save-dd-btn" onclick="closeSaveMenu();document.getElementById('projectImportInput').click()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>プロジェクトファイルを読み込む</span><span class="save-dd-sub">.mwpj / 旧JSON に対応</span>
+        </button>
+      </div>
+    </div>
+    <div class="autosave-indicator" id="autosaveIndicator" title="自動保存状態">
+      <span id="autosaveIcon">●</span>
+      <span id="autosaveText">保存済</span>
+    </div>
+    <input type="file" id="projectImportInput" accept=".mwpj,.json,application/json" style="display:none" onchange="importProjectFile(event)">
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+
+<!-- 1. 執筆 -->
+<div class="panel active" id="panel-scenario">
+  <!-- タイトルバー -->
+  <div class="scenario-title-bar">
+    <div class="scenario-title-main">
+      <div class="scenario-title-top">
+        <span class="scenario-title-label">📜 タイトル</span>
+        <div class="scenario-title-text" id="scenarioTitleText">（未設定）</div>
+      </div>
+      <div class="scenario-title-meta" id="scenarioTitleMeta">
+        <span class="title-chip" id="projectModeChip">モード：汎用</span>
+        <span class="title-chip" id="writingTemplateChip">テンプレート：汎用</span>
+        <span class="title-chip" id="projectEditionChip" style="display:none">ルール版：7版</span>
+        <span class="title-chip" id="characterCountChip">キャラクター：0件</span>
+      </div>
+    </div>
+    <div class="scenario-title-actions">
+      <button class="btn btn-sm" onclick="openInitialSettingsModal(false)" title="タイトル・モード・テンプレートなどの初期設定を変更">⚙ 初期設定変更</button>
+    </div>
+  </div>
+  <div class="scenario-layout">
+    <div class="scene-sidebar">
+      <div class="sidebar-label">シーン一覧</div>
+      <div id="sceneList"></div>
+      <button class="scene-add-btn" onclick="addScene()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        シーン追加
+      </button>
+    </div>
+    <div class="writer-wrap">
+      <div class="writer-toolbar">
+        <span style="font-size:12px;color:var(--text-muted);font-weight:500">ブロック種別：</span>
+        <div class="type-pills">
+          <button class="type-pill pill-scene" id="tpScene" onclick="setBlockType('scene')">👁 場面描写</button>
+          <button class="type-pill" id="tpDialog" onclick="setBlockType('dialog')">💬 セリフ</button>
+          <button class="type-pill" id="tpGame" onclick="setBlockType('game')">🎲 ゲーム処理</button>
+          <button class="type-pill" id="tpPagebreak" onclick="setBlockType('pagebreak')">📄 改ページ</button>
+        </div>
+        <div class="writer-ctrls">
+          <div class="filter-wrap">
+            <span class="filter-label">表示：</span>
+            <select id="blockFilterType" class="writer-select" onchange="setBlockFilterType(this.value)">
+              <option value="all">すべてのブロック</option>
+              <option value="scene">場面描写のみ</option>
+              <option value="dialog">セリフのみ</option>
+              <option value="game">ゲーム処理のみ</option>
+              <option value="pagebreak">改ページのみ</option>
+              <option value="artifact">アイテム参照のみ</option>
+              <option value="map">マップ参照のみ</option>
+              <option value="timeline">時系列参照のみ</option>
+              <option value="plot">プロット参照のみ</option>
+            </select>
+            <span id="blockFilterSpeakerWrap">
+              <select id="blockFilterSpeaker" class="writer-select" onchange="setBlockFilterSpeaker(this.value)">
+                <option value="all">全話者</option>
+              </select>
+            </span>
+            <button class="btn btn-sm" onclick="clearBlockFilters()">解除</button>
+            <span class="filter-badge" id="blockFilterBadge" style="display:none"></span>
+          </div>
+          <div class="mode-switch" role="group" aria-label="執筆方向">
+            <button class="mode-btn active" id="wmHorizontal" onclick="setWritingMode('horizontal')">横書き</button>
+            <button class="mode-btn" id="wmVertical" onclick="setWritingMode('vertical')">縦書き</button>
+          </div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <button class="btn btn-sm" onclick="addBlock()">＋ ブロック追加</button>
+          <!-- 参照挿入メニュー -->
+          <div class="insert-menu-wrap" id="insertMenuWrap">
+            <button class="insert-menu-btn" onclick="toggleInsertMenu(event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+              参照挿入
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="insert-dropdown" id="insertDropdown">
+              <div class="insert-dropdown-hd">参照ブロックを追加</div>
+              <button class="insert-type-btn" onclick="openRefPicker('artifact')"><span class="it-icon">📦</span><span class="it-label">アイテム</span><span class="it-sub">参考情報・リソース</span></button>
+              <button class="insert-type-btn" onclick="openRefPicker('map')"><span class="it-icon">🗺</span><span class="it-label">マップ／場所</span><span class="it-sub">部屋・ロケーション</span></button>
+              <button class="insert-type-btn" onclick="openRefPicker('timeline')"><span class="it-icon">⏰</span><span class="it-label">時系列イベント</span><span class="it-sub">過去・未来の出来事</span></button>
+              <button class="insert-type-btn" onclick="openRefPicker('plot')"><span class="it-icon">📋</span><span class="it-label">プロットフェーズ</span><span class="it-sub">進行・シーン構成</span></button>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="deleteCurrentScene()" title="現在のシーンを削除">🗑</button>
+        </div>
+      </div>
+      <div class="writer-body">
+        <div class="blocks-container" id="blockList"></div>
+        <div class="block-add-row">
+          <button class="btn btn-sm" onclick="addBlock()">＋ ブロック追加</button>
+          <button class="btn btn-sm" onclick="renameScene()">✏ シーン名変更</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. キャラクター管理 -->
+<div class="panel" id="panel-npc">
+  <div class="sec-hd">
+    <div class="sec-title">キャラクター一覧</div>
+    <button class="btn btn-primary" onclick="openNPCModal()">＋ キャラクター追加</button>
+  </div>
+  <div class="npc-grid" id="npcGrid"></div>
+</div>
+
+<!-- 3. アイテム管理 -->
+<div class="panel" id="panel-artifact">
+  <div class="sec-hd">
+    <div class="sec-title">アイテム一覧</div>
+    <button class="btn btn-primary" onclick="openArtModal()">＋ アイテム追加</button>
+  </div>
+  <div class="art-grid" id="artGrid"></div>
+</div>
+
+<!-- 4. マップ管理 -->
+<div class="panel" id="panel-map">
+  <div class="fp-outer">
+
+    <!-- ウェルカム画面 -->
+    <div id="mapWelcome" style="display:none">
+      <div class="map-welcome-wrap">
+        <div class="map-welcome-title">マップを作成する</div>
+        <div class="map-welcome-sub">まずマップの種類を選択してください</div>
+        <div class="map-welcome-cards">
+          <div class="map-welcome-card indoor-card" onclick="createFirstFloor('indoor')">
+            <div class="mwc-icon">🏠</div>
+            <div class="mwc-name">屋内マップ（間取り図）</div>
+            <div class="mwc-desc">屋敷・病院・工場など<br>部屋を矩形で配置する間取り図形式</div>
+            <div class="mwc-examples">例）書斎・地下室・廊下・隠し部屋</div>
+            <div style="margin-top:14px"><div class="map-welcome-cta">このタイプで始める →</div></div>
+          </div>
+          <div class="map-welcome-card outdoor-card" onclick="createFirstFloor('outdoor')">
+            <div class="mwc-icon">🌿</div>
+            <div class="mwc-name">屋外マップ（エリア図）</div>
+            <div class="mwc-desc">街・港・荒野など<br>エリアをブロックで配置するマップ形式</div>
+            <div class="mwc-examples">例）中央広場・港・教会・廃墟</div>
+            <div style="margin-top:14px"><div class="map-welcome-cta">このタイプで始める →</div></div>
+          </div>
+        </div>
+        <div class="map-welcome-note">※ 後からフロア・エリアを追加できます</div>
+      </div>
+    </div>
+
+    <!-- メインUI -->
+    <div id="mapMain" style="display:none;flex-direction:column;gap:0;height:100%">
+
+      <!-- ツールバー -->
+      <div class="fp-toolbar" id="fpToolbar"></div>
+
+      <!-- フロアタブ -->
+      <div class="fp-floor-tabs" id="fpFloorTabs"></div>
+
+      <!-- 本体 -->
+      <div class="fp-body">
+
+        <!-- キャンバス領域 -->
+        <div class="fp-canvas-wrap">
+          <canvas id="fpCanvas" class="fp-canvas"></canvas>
+          <!-- オーバーレイ：部屋ラベル＆リサイズハンドルはCanvas上に別途SVGで -->
+          <svg id="fpSvg" class="fp-svg"></svg>
+        </div>
+
+        <!-- サイドパネル -->
+        <div class="fp-side">
+          <div class="fp-side-tabs">
+            <button class="fp-stab active" id="fst-detail"    onclick="MAP.sideTab='detail';renderFpSide()">詳細</button>
+            <button class="fp-stab"        id="fst-list"      onclick="MAP.sideTab='list';renderFpSide()">一覧</button>
+            <button class="fp-stab"        id="fst-furniture" onclick="MAP.sideTab='furniture';setFpMode('furniture');renderFpSide()">家具</button>
+            <button class="fp-stab"        id="fst-legend"    onclick="MAP.sideTab='legend';renderFpSide()">凡例</button>
+          </div>
+          <div class="fp-side-body" id="fpSideBody"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. 時系列管理 -->
+<div class="panel" id="panel-timeline">
+  <div class="sec-hd">
+    <div class="sec-title">時系列</div>
+    <button class="btn btn-primary" onclick="openTLModal()">＋ イベント追加</button>
+  </div>
+  <div class="tl-card">
+    <div id="timelineList"></div>
+  </div>
+</div>
+
+<!-- 6. プロット管理 -->
+<div class="panel" id="panel-plot">
+  <div class="sec-hd">
+    <div class="sec-title">プロット管理</div>
+    <button class="btn btn-primary" onclick="openPlotModal()">＋ フェーズ追加</button>
+  </div>
+  <div class="plot-phases-grid" id="plotGrid"></div>
+</div>
+
+</div><!-- .content -->
+
+<footer class="app-footer">©Kakigoto</footer>
+</div><!-- .app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 起動時の開始方法選択 -->
+<div class="overlay" id="startupChoiceModal">
+<div class="modal startup-choice-modal" style="max-width:520px">
+  <div class="modal-hd" id="startupChoiceTitle">執筆を開始</div>
+  <p class="startup-choice-desc" id="startupChoiceDesc">このページでは、新規作成か前回の続きから再開するかを選べます。</p>
+  <div class="startup-choice-actions">
+    <button class="btn btn-primary startup-choice-btn" onclick="chooseStartupMode('new')">🆕 新規執筆から始める</button>
+    <button class="btn startup-choice-btn" id="startupContinueBtn" onclick="chooseStartupMode('continue')">📂 続きから始める</button>
+  </div>
+  <div class="startup-choice-note" id="startupContinueNote"></div>
+</div>
+</div>
+
+  <!-- 新規作成/初期設定モーダル -->
+  <div class="overlay" id="initialSettingsModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-hd" id="initialSettingsTitle">初期設定</div>
+    <p class="startup-choice-desc" id="initialSettingsDesc" style="margin-bottom:14px">タイトルやモードを設定して開始します。</p>
+
+    <div class="form-g" style="margin-bottom:12px">
+      <label class="form-lbl">タイトル *</label>
+      <input class="form-input" id="scenarioTitle" placeholder="例：第1章 夜明けの街">
+    </div>
+
+    <div class="form-row" style="margin-bottom:10px">
+      <div class="form-g" id="projectModeSep">
+        <label class="form-lbl">モード</label>
+        <select id="projectModeSel" class="form-input" onchange="syncInitialSettingsModeUI()">
+          <option value="general">汎用</option>
+          <option value="trpg">TRPG</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row" id="writingTemplateSep" style="margin-bottom:10px">
+      <div class="form-g" id="writingTemplateWrap">
+        <label class="form-lbl" id="writingTemplateLabel">テンプレート</label>
+        <select id="writingTemplateSel" class="form-input">
+          <option value="default">汎用</option>
+          <option value="novel">小説</option>
+          <option value="script">脚本</option>
+          <option value="article">記事</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row" id="projectEditionSep" style="margin-bottom:8px">
+      <div class="form-g" id="projectEditionWrap">
+        <label class="form-lbl" id="projectEditionLabel">ルール版</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="edition-btn" id="projEdBtn7" onclick="setProjectEdition('7th')">📘 7版</button>
+          <button type="button" class="edition-btn" id="projEdBtn6" onclick="setProjectEdition('6th')">📗 6版</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="startup-choice-actions" style="margin-top:16px">
+      <button class="btn" id="initialSettingsCancelBtn" onclick="closeModal('initialSettingsModal')">キャンセル</button>
+      <button class="btn btn-primary" id="initialSettingsApplyBtn" onclick="applyInitialSettings()">この設定で開始</button>
+    </div>
+  </div>
+  </div>
+
+<!-- === MODALS === -->
+
+<!-- Character Modal -->
+<div class="overlay" id="npcModal">
+<div class="modal" style="max-width:680px">
+  <div class="modal-hd">キャラクター設定 <button class="modal-close" onclick="closeModal('npcModal')">✕</button></div>
+  <input type="hidden" id="npcEid">
+
+  <!-- タブ -->
+  <div class="npc-modal-tabs">
+    <button class="npc-mtab active" id="nmtab-basic"  onclick="switchNpcTab('basic')">👤 基本情報</button>
+    <button class="npc-mtab"        id="nmtab-stats"  onclick="switchNpcTab('stats')">📊 能力値</button>
+    <button class="npc-mtab"        id="nmtab-skills" onclick="switchNpcTab('skills')">🧩 項目</button>
+    <button class="npc-mtab"        id="nmtab-memo"   onclick="switchNpcTab('memo')">📝 メモ</button>
+  </div>
+
+  <!-- ── タブ：基本情報 ── -->
+  <div class="npc-mtab-panel active" id="nmtp-basic">
+    <div class="form-row">
+      <div class="form-g"><label class="form-lbl">名前 *</label><input class="form-input" id="npcName" placeholder="例：田村警部"></div>
+      <div class="form-g"><label class="form-lbl">役割・職業</label><input class="form-input" id="npcRole" placeholder="例：警察官、商人"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-g">
+        <label class="form-lbl">陣営</label>
+        <select class="form-input" id="npcAlignment">
+          <option value="">── 未設定 ──</option>
+          <option value="ally">🟢 味方</option>
+          <option value="neutral">🟡 中立</option>
+          <option value="enemy">🔴 敵</option>
+          <option value="unknown">⚫ 不明</option>
+        </select>
+      </div>
+      <div class="form-g"><label class="form-lbl">タグ（カンマ区切り）</label><input class="form-input" id="npcTags" placeholder="例：情報提供者, 怪物"></div>
+    </div>
+    <div class="form-g"><label class="form-lbl">外見・背景・性格</label><textarea class="form-input form-textarea" id="npcDesc" placeholder="外見の特徴、過去、性格など"></textarea></div>
+    <div class="form-g">
+      <label class="form-lbl">セリフカラー <span style="font-size:11px;color:var(--text-hint);font-weight:400">— セリフブロックの話者色</span></label>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div id="npcColorSwatches" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+        <input type="color" class="form-input" id="npcColorCustom" style="width:44px;height:34px;padding:2px 4px;cursor:pointer" title="カスタムカラー">
+        <span id="npcColorPreview" style="font-size:12px;padding:3px 10px;border-radius:12px;font-weight:500;background:#e6f1fb;color:#185fa5">プレビュー</span>
+      </div>
+      <input type="hidden" id="npcColor">
+    </div>
+  </div>
+
+  <!-- ── タブ：能力値 ── -->
+  <div class="npc-mtab-panel" id="nmtp-stats">
+    <div class="stat-section-hd" id="npcStatsSectionHd">基本プロファイル</div>
+    <div class="npc-stats-grid" id="npcStatsGrid">
+      <!-- JS で動的生成 -->
+    </div>
+  </div>
+
+  <!-- ── タブ：技能 ── -->
+  <div class="npc-mtab-panel" id="nmtp-skills">
+    <div class="skill-add-area">
+      <div class="skill-custom-row">
+        <input class="form-input" id="skillCustomName" placeholder="技能名" style="flex:2">
+        <input class="form-input" id="skillCustomVal" type="number" min="0" max="999" placeholder="技能値" style="flex:1;max-width:100px">
+        <input class="form-input" id="skillCustomNote" placeholder="補足情報" style="flex:2">
+        <button class="btn btn-primary btn-sm" onclick="addCustomSkill()">＋ 追加</button>
+      </div>
+    </div>
+    <div id="npcSkillListLabel" style="font-size:11px;font-weight:600;color:var(--text-hint);letter-spacing:0.07em;margin:10px 0 6px;text-transform:uppercase">項目一覧</div>
+    <div id="npcSkillList" class="npc-skill-list"></div>
+  </div>
+
+  <!-- ── タブ：メモ ── -->
+  <div class="npc-mtab-panel" id="nmtp-memo">
+    <div class="form-g"><label class="form-lbl" id="npcWeaponsLbl">装備・関連情報</label><textarea class="form-input form-textarea" id="npcWeapons" placeholder="例：持ち物、関連人物、外部リンク" style="min-height:80px"></textarea></div>
+    <div class="form-g"><label class="form-lbl" id="npcAbilitiesLbl">補足事項</label><textarea class="form-input form-textarea" id="npcAbilities" placeholder="例：特徴、注意点、運用メモ" style="min-height:80px"></textarea></div>
+    <div class="form-g"><label class="form-lbl">非公開メモ</label><textarea class="form-input form-textarea" id="npcSecret" placeholder="公開しない情報、動機、真の目的など"></textarea></div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('npcModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveNPC()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Item Modal -->
+<div class="overlay" id="artModal">
+<div class="modal">
+  <div class="modal-hd">アイテム設定 <button class="modal-close" onclick="closeModal('artModal')">✕</button></div>
+  <input type="hidden" id="artEid">
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">名称 *</label><input class="form-input" id="artName" placeholder="例：調査報告書A-12"></div>
+    <div class="form-g"><label class="form-lbl">種別</label><input class="form-input" id="artType" placeholder="例：文書、画像、アイテム"></div>
+  </div>
+  <div class="form-g"><label class="form-lbl">説明</label><textarea class="form-input form-textarea" id="artDesc" placeholder="外見や由来、入手経緯など"></textarea></div>
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">影響値（任意）</label><input class="form-input" id="artSan" placeholder="例：1d6 / 中 / 高"></div>
+    <div class="form-g"><label class="form-lbl">使用条件</label><input class="form-input" id="artReq" placeholder="例：図書館利用成功"></div>
+  </div>
+  <div class="form-g"><label class="form-lbl">効果・ゲームへの影響</label><textarea class="form-input form-textarea" id="artEffect" placeholder="プレイヤーへの影響、入手できる情報など"></textarea></div>
+  <div class="form-g"><label class="form-lbl">非公開メモ</label><textarea class="form-input form-textarea" id="artKp" placeholder="編集上の注記など"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('artModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveArt()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Room Modal -->
+<div class="overlay" id="roomModal">
+<div class="modal" style="max-width:660px">
+  <div class="modal-hd">場所設定 <button class="modal-close" onclick="closeModal('roomModal')">✕</button></div>
+  <input type="hidden" id="roomEid">
+
+  <!-- テンプレートピッカー -->
+  <div class="tpl-picker" id="tplPickerWrap" style="margin-bottom:14px;padding:10px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);max-height:220px;overflow-y:auto">
+    <div style="color:var(--text-hint);font-size:12px">読み込み中...</div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">場所名 *</label><input class="form-input" id="roomName" placeholder="例：書斎、中央広場"></div>
+    <div class="form-g"><label class="form-lbl">調査番号</label><input class="form-input" id="roomNum" placeholder="例：①、A-1、手がかり3"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">カテゴリ</label>
+      <select class="form-input" id="roomCat">
+        <optgroup label="屋内">
+          <option value="normal">🚪 通常</option>
+          <option value="entry">🚪 入口・出口</option>
+          <option value="key">⭐ 重要</option>
+          <option value="danger">⚠ 危険</option>
+          <option value="secret">🔒 秘密</option>
+        </optgroup>
+        <optgroup label="屋外">
+          <option value="outdoor">🌿 屋外エリア</option>
+          <option value="landmark">🏛 ランドマーク</option>
+          <option value="shop">🏪 店舗・施設</option>
+          <option value="religious">⛪ 宗教施設</option>
+          <option value="medical">🏥 医療施設</option>
+          <option value="school">🏫 教育施設</option>
+          <option value="govt">🏛 官公庁</option>
+          <option value="transport">🚉 交通</option>
+          <option value="water">🌊 水域</option>
+          <option value="forest">🌲 森林・自然</option>
+          <option value="ruin">🏚 廃墟・遺跡</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="form-g"><label class="form-lbl">フロア</label>
+      <select class="form-input" id="roomFloor"></select>
+    </div>
+  </div>
+  <div class="form-g"><label class="form-lbl">雰囲気・描写</label><textarea class="form-input form-textarea" id="roomDesc" placeholder="調査官が入室した際の描写（屋外なら情景描写）"></textarea></div>
+  <div class="form-g"><label class="form-lbl">手がかり・イベント</label><textarea class="form-input form-textarea" id="roomClue" placeholder="発見できるもの、起こりうるイベント"></textarea></div>
+  <div class="form-g"><label class="form-lbl">非公開メモ</label><textarea class="form-input form-textarea" id="roomKp" placeholder="公開しない情報・分岐条件など" style="min-height:60px"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('roomModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveRoom()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Edge Edit Modal -->
+<div class="overlay" id="edgeModal">
+<div class="modal" style="max-width:380px">
+  <div class="modal-hd">接続の設定 <button class="modal-close" onclick="closeModal('edgeModal')">✕</button></div>
+  <input type="hidden" id="edgeEid">
+  <div class="form-g"><label class="form-lbl">接続タイプ</label>
+    <select class="form-input" id="edgeType">
+      <option value="normal">── 通常の出入口</option>
+      <option value="locked">╌ 施錠された扉</option>
+      <option value="secret">… 秘密の通路</option>
+      <option value="outdoor">⌇ 屋外の道・路地</option>
+    </select>
+  </div>
+  <div class="form-g"><label class="form-lbl">メモ（鍵の条件・発見条件など）</label><input class="form-input" id="edgeNote" placeholder="例：鍵は書斎の引き出しにある"></div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" onclick="deleteEdge()">🗑 この接続を削除</button>
+    <div style="flex:1"></div>
+    <button class="btn" onclick="closeModal('edgeModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveEdge()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- フロア追加タイプ選択シート -->
+<div class="overlay" id="addFloorSheet">
+<div class="modal" style="max-width:520px">
+  <div class="modal-hd">フロアを追加 <button class="modal-close" onclick="closeModal('addFloorSheet')">✕</button></div>
+  <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">追加するフロアの種類を選択してください</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="floor-add-card" onclick="pickFloorType('indoor')">
+      <div class="floor-add-card-inner">
+        <div class="fac-icon fac-indoor">🏠</div>
+        <div>
+          <div class="fac-name" style="color:var(--blue-600)">屋内フロア</div>
+          <div class="fac-desc">部屋・廊下・階段など<br>建物内部の構造</div>
+        </div>
+      </div>
+    </div>
+    <div class="floor-add-card" onclick="pickFloorType('outdoor')">
+      <div class="floor-add-card-inner">
+        <div class="fac-icon fac-outdoor">🌿</div>
+        <div>
+          <div class="fac-name" style="color:#1e7a60">屋外フロア</div>
+          <div class="fac-desc">街・広場・荒野など<br>屋外エリアの構造</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:12px;font-size:11px;color:var(--text-hint);text-align:center">選択後にフロア名・メモを設定できます</div>
+</div>
+</div>
+
+<!-- Floor Modal -->
+<div class="overlay" id="floorModal">
+<div class="modal" style="max-width:380px">
+  <div class="modal-hd">フロア設定 <button class="modal-close" onclick="closeModal('floorModal')">✕</button></div>
+  <input type="hidden" id="floorEid">
+  <div class="form-g"><label class="form-lbl">フロア名 *</label><input class="form-input" id="floorName" placeholder="例：1F、2F、地下室、街道沿い"></div>
+  <div class="form-g"><label class="form-lbl">タイプ</label>
+    <select class="form-input" id="floorType">
+      <option value="indoor">🏠 屋内</option>
+      <option value="outdoor">🌿 屋外</option>
+    </select>
+  </div>
+  <div class="form-g"><label class="form-lbl">メモ</label><input class="form-input" id="floorNote" placeholder="このフロアの概要"></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('floorModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveFloor()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Timeline Modal -->
+<div class="overlay" id="tlModal">
+<div class="modal">
+  <div class="modal-hd">時系列イベント <button class="modal-close" onclick="closeModal('tlModal')">✕</button></div>
+  <input type="hidden" id="tlEid">
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">日時 *</label><input class="form-input" id="tlTime" placeholder="例：1925年10月3日 午後2時"></div>
+    <div class="form-g"><label class="form-lbl">種別</label>
+      <select class="form-input" id="tlTag">
+        <option value="event">イベント</option>
+        <option value="combat">戦闘</option>
+        <option value="reveal">重要な手がかり</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-g"><label class="form-lbl">タイトル *</label><input class="form-input" id="tlTitle" placeholder="例：教授が行方不明に"></div>
+  <div class="form-g"><label class="form-lbl">詳細</label><textarea class="form-input form-textarea" id="tlDesc" placeholder="何が起きるか、誰が関わるかなど"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('tlModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveTL()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Plot Modal -->
+<div class="overlay" id="plotModal">
+<div class="modal">
+  <div class="modal-hd">プロット・フェーズ <button class="modal-close" onclick="closeModal('plotModal')">✕</button></div>
+  <input type="hidden" id="plotEid">
+  <div class="form-row">
+    <div class="form-g"><label class="form-lbl">フェーズ名 *</label><input class="form-input" id="plotName" placeholder="例：導入、調査、クライマックス"></div>
+    <div class="form-g"><label class="form-lbl">目的・ゴール</label><input class="form-input" id="plotGoal" placeholder="例：事件の全容を掴む"></div>
+  </div>
+  <div class="form-g"><label class="form-lbl">主要イベント（1行1イベント）</label><textarea class="form-input form-textarea" id="plotItems" placeholder="例：&#10;大学教授から依頼を受ける&#10;図書館で古文書を発見&#10;廃工場を調査する"></textarea></div>
+  <div class="form-g"><label class="form-lbl">編集メモ・注記</label><textarea class="form-input form-textarea" id="plotNote" placeholder="進行のヒントや分岐条件など"></textarea></div>
+  <div class="modal-footer">
+    <button class="btn" onclick="closeModal('plotModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="savePlot()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- ===== 保存スロット管理モーダル ===== -->
+<div class="overlay" id="slotModal">
+<div class="modal" style="max-width:620px">
+  <div class="modal-hd">保存スロット管理 <button class="modal-close" onclick="closeModal('slotModal')">✕</button></div>
+
+  <!-- 新規スロット保存 -->
+  <div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--radius);padding:14px;margin-bottom:16px">
+    <div style="font-size:12px;font-weight:600;color:var(--blue-600);margin-bottom:8px">📥 現在の内容を名前をつけて保存</div>
+    <div style="display:flex;gap:8px">
+      <input class="form-input" id="slotSaveName" placeholder="保存名（例：第1話 調査開始、ver1.2など）" style="flex:1">
+      <button class="btn btn-primary" onclick="saveToSlot()">保存する</button>
+    </div>
+  </div>
+
+  <!-- スロット一覧 -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">保存済みスロット（最大10件）</div>
+  <div id="slotList" style="display:flex;flex-direction:column;gap:8px;max-height:380px;overflow-y:auto"></div>
+
+  <!-- インポート案内 -->
+  <div style="margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--text-hint);line-height:1.7">
+      💡 <strong>別デバイスで続きを編集するには</strong>：「プロジェクトファイルを書き出す」で保存 → スマホ等に転送 → そのデバイスのブラウザで同じHTMLを開き「プロジェクトファイルを読み込む」で読み込み
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- 参照ブロック選択ピッカー -->
+<div class="ref-picker-overlay" id="refPickerOverlay">
+  <div class="ref-picker">
+    <div class="ref-picker-hd">
+      <div class="ref-picker-title" id="refPickerTitle">参照先を選択</div>
+      <button class="modal-close" onclick="closeRefPicker()">✕</button>
+    </div>
+    <div class="ref-picker-list" id="refPickerList"></div>
+  </div>
+</div>
+
+<div class="logo-intro" id="logoIntro" aria-hidden="true">
+  <div class="logo-intro-stage">
+    <span class="logo-intro-ring ring-1" aria-hidden="true"></span>
+    <span class="logo-intro-ring ring-2" aria-hidden="true"></span>
+    <span class="logo-intro-ring ring-3" aria-hidden="true"></span>
+    <span class="logo-intro-ripple rp-1" aria-hidden="true"></span>
+    <span class="logo-intro-ripple rp-2" aria-hidden="true"></span>
+    <span class="logo-intro-ripple rp-3" aria-hidden="true"></span>
+    <span class="logo-intro-ripple rp-4" aria-hidden="true"></span>
+    <span class="logo-intro-glow" aria-hidden="true"></span>
+    <span class="logo-intro-drop d1" aria-hidden="true"></span>
+    <span class="logo-intro-drop d2" aria-hidden="true"></span>
+    <span class="logo-intro-drop d3" aria-hidden="true"></span>
+    <span class="logo-intro-drop d4" aria-hidden="true"></span>
+    <span class="logo-intro-spark s1" aria-hidden="true"></span>
+    <span class="logo-intro-spark s2" aria-hidden="true"></span>
+    <span class="logo-intro-spark s3" aria-hidden="true"></span>
+    <div class="logo-intro-card">
+      <img src="img/logo.png" alt="Kakigoto ロゴ" class="logo-intro-mark">
+    </div>
+  </div>
+</div>
+
+<script src="js/kakigoto.js"></script>
+</body>
+</html>
